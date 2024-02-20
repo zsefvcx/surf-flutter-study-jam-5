@@ -38,7 +38,6 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
         width: 2,
       ),
     );
-    final path = imgXFile?.path;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -67,15 +66,23 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
                           cursor: SystemMouseCursors.click,
                           child: GestureDetector(
                             onTap: getImageFromGallery,
-                            child: (path != null)
-                              ? Image.file(
-                                  File(path),
-                                  fit: BoxFit.cover,
-                                )
-                              : Image.network(
-                                  'https://i.cbc.ca/1.6713656.1679693029!/fileImage/httpImage/image.jpg_gen/derivatives/16x9_780/this-is-fine.jpg',
-                                  fit: BoxFit.cover,
-                              ),
+                            onDoubleTap: getImageFromPhoto,
+                            child: ValueListenableBuilder(
+                              valueListenable: _valueNewFile,
+                              builder: (_, value, __) {
+                                _valueNewFile.value = false;
+                                final path = imgXFile?.path;
+                                return (path != null)
+                                  ? Image.file(
+                                    File(path),
+                                     fit: BoxFit.cover,
+                                    )
+                                  : Image.network(
+                                    'https://i.cbc.ca/1.6713656.1679693029!/fileImage/httpImage/image.jpg_gen/derivatives/16x9_780/this-is-fine.jpg',
+                                    fit: BoxFit.cover,
+                                  );
+                              }
+                            )
                           )
                         )
                       ),
@@ -112,5 +119,12 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
   Future<void> getImageFromGallery() async {
     imgXFile = await imagePicker.pickImage(source: ImageSource.gallery);
     if (imgXFile == null) return;
+    _valueNewFile.value = true;
+  }
+
+  Future<void> getImageFromPhoto() async {
+    imgXFile = await imagePicker.pickImage(source: ImageSource.camera);
+    if (imgXFile == null) return;
+    _valueNewFile.value = true;
   }
 }
