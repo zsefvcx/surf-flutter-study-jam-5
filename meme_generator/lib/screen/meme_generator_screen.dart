@@ -1,7 +1,34 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-class MemeGeneratorScreen extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
+class MemeGeneratorScreen extends StatefulWidget {
   const MemeGeneratorScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MemeGeneratorScreen> createState() => _MemeGeneratorScreenState();
+}
+
+class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
+
+  final ImagePicker imagePicker = ImagePicker();
+  XFile? imgXFile;
+  final _valueNewFile = ValueNotifier<bool>(false);
+  final _textController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _textController.text = 'Здесь мог бы быть ваш мем';
+  }
+
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,6 +38,8 @@ class MemeGeneratorScreen extends StatelessWidget {
         width: 2,
       ),
     );
+    final path = imgXFile?.path;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
@@ -34,24 +63,38 @@ class MemeGeneratorScreen extends StatelessWidget {
                       decoration: decoration,
                       child: Padding(
                         padding: const EdgeInsets.all(4.0),
-                        child: Image.network(
-                          'https://i.cbc.ca/1.6713656.1679693029!/fileImage/httpImage/image.jpg_gen/derivatives/16x9_780/this-is-fine.jpg',
-                          fit: BoxFit.cover,
-                        ),
+                        child: (path != null)
+                            ? Image.file(
+                                File(path),
+                                fit: BoxFit.cover,
+                              )
+                            : Image.network(
+                                'https://i.cbc.ca/1.6713656.1679693029!/fileImage/httpImage/image.jpg_gen/derivatives/16x9_780/this-is-fine.jpg',
+                                fit: BoxFit.cover,
+                            ),
                       ),
                     ),
                   ),
-                  const Text(
-                    'Здесь мог бы быть ваш мем',
+                  TextField(
+                    controller: _textController,
+                    minLines: 1,
+                    maxLines: 10,
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: 'Impact',
                       fontSize: 40,
                       color: Colors.white,
                     ),
+                    mouseCursor: SystemMouseCursors.text,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none
+                    ),
                   ),
                 ],
               ),
+
+
+
             ),
           ),
         ),
