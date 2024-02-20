@@ -75,8 +75,22 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
                  decoration: const InputDecoration(
                      border: InputBorder.none
                  ),
+                 onSubmitted: (_) => setState(() {
+
+                 }),
                ),
              ),
+             const SizedBox(width: 10,),
+             ElevatedButton(onPressed: () => setState(() {
+
+               }),
+              style:  const ButtonStyle(
+                  backgroundColor: MaterialStatePropertyAll(Colors.black)
+              ),
+              child: const Icon(Icons.update, color: Colors.white),
+             ),
+
+
            ],
          ),
       ),
@@ -155,7 +169,7 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
-            backgroundColor: Colors.white,
+            backgroundColor: Colors.grey,
             child: const Icon(Icons.share,),
             onPressed: () async {
               var boundary = key.currentContext?.findRenderObject();
@@ -177,7 +191,7 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
             }),
           const SizedBox(width: 10,),
           FloatingActionButton(
-            backgroundColor: Colors.white,
+            backgroundColor: Colors.grey,
             child: const Icon(Icons.save_as_sharp,),
             onPressed: () async {
               var boundary = key.currentContext?.findRenderObject();
