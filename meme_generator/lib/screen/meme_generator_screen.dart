@@ -105,12 +105,16 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
                   ),
                 ],
               ),
-
-
-
             ),
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.white,
+        child: const Icon(Icons.save_as_sharp,),
+        onPressed: () {
+
+        },
       ),
     );
   }
