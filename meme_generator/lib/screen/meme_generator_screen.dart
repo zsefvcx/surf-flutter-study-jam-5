@@ -9,6 +9,19 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share/share.dart';
 
+enum ColorLabel {
+  blue('Blue', Colors.blue),
+  pink('Pink', Colors.pink),
+  green('Green', Colors.green),
+  yellow('Orange', Colors.orange),
+  black('Black', Colors.black),
+  grey('Grey', Colors.grey);
+
+  const ColorLabel(this.label, this.color);
+  final String label;
+  final Color color;
+}
+
 class MemeGeneratorScreen extends StatefulWidget {
   const MemeGeneratorScreen({Key? key}) : super(key: key);
 
@@ -23,6 +36,9 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
   final _valueNewFile = ValueNotifier<bool>(false);
   final _textController = TextEditingController();
   final _textControllerUrl = TextEditingController();
+  final _colorController = TextEditingController();
+  var _count = 2;
+  var selectedColor = ColorLabel.black;
   final key = GlobalKey();
 
   @override
@@ -90,79 +106,149 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
               child: const Icon(Icons.update, color: Colors.white),
              ),
 
-
            ],
          ),
       ),
-      body: RepaintBoundary(
-        key: key,
-        child: Center(
-          child: ColoredBox(
-            color: Colors.black,
-            child: DecoratedBox(
-              decoration: decoration,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 50,
-                  vertical: 20,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    SizedBox(
-                      width: double.infinity,
-                      height: 200,
-                      child: DecoratedBox(
-                        decoration: decoration,
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
-                          child: MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: GestureDetector(
-                              onTap: getImageFromGallery,
-                              onDoubleTap: getImageFromPhoto,
-                              child: ValueListenableBuilder(
-                                valueListenable: _valueNewFile,
-                                builder: (_, value, __) {
-                                  _valueNewFile.value = false;
-                                  final path = imgXFile?.path;
-                                  return (path != null)
-                                    ? Image.file(
-                                      File(path),
-                                       fit: BoxFit.cover,
-                                      )
-                                    : Image.network(
-                                        _textControllerUrl.text,
-                                        fit: BoxFit.cover,
-                                      );
-                                }
-                              )
-                            )
-                          )
-                        ),
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              color: Colors.black,
+              child: Row(
+                children: [
+                  DropdownMenu<ColorLabel>(
+                    textStyle: const TextStyle(color: Colors.white),
+                    menuStyle: const MenuStyle(
+                      backgroundColor: MaterialStatePropertyAll(Colors.white),
+                      surfaceTintColor: MaterialStatePropertyAll(Colors.white),
+                    ),
+                    initialSelection: ColorLabel.black,
+                    controller: _colorController,
+                    requestFocusOnTap: true,
+                    onSelected: (ColorLabel? color) {
+                      setState(() {
+                        selectedColor = color??ColorLabel.black;
+                        FocusScope.of(context).unfocus();
+                      });
+                    },
+                    dropdownMenuEntries: ColorLabel.values
+                        .map<DropdownMenuEntry<ColorLabel>>(
+                            (ColorLabel color) {
+                          return DropdownMenuEntry<ColorLabel>(
+                            value: color,
+                            label: color.label,
+                            //enabled: color.label != 'Grey',
+                            style: MenuItemButton.styleFrom(
+                              foregroundColor: color.color,
+                            ),
+                          );
+                        }).toList(),
+                  ),
+                  DropdownMenu<int>(
+                    textStyle: const TextStyle(color: Colors.white),
+                    menuStyle: const MenuStyle(
+                      backgroundColor: MaterialStatePropertyAll(Colors.white),
+                      surfaceTintColor: MaterialStatePropertyAll(Colors.white),
+                    ),
+                    initialSelection: _count,
+                    //controller: _colorController,
+                    requestFocusOnTap: true,
+                    onSelected: (int? num) {
+                      setState(() {
+                        _count = num??2;
+                        FocusScope.of(context).unfocus();
+                      });
+                    },
+                    dropdownMenuEntries: [
+                      for(int i = 1; i < 5; i++)DropdownMenuEntry<int>(
+                        value: i,
+                        label: i.toString(),
+                        //enabled: color.label != 'Grey',
+                        style: MenuItemButton.styleFrom(
+                          foregroundColor: Colors.black,
+                        )
+                      )
+
+                    ],
+
+                  ),
+                ],
+              ),
+            ),
+            RepaintBoundary(
+              key: key,
+              child: Center(
+                child: ColoredBox(
+                  color: selectedColor.color,
+                  child: DecoratedBox(
+                    decoration: decoration,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 50,
+                        vertical: 20,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          SizedBox(
+                            width: double.infinity,
+                            height: 200,
+                            child: DecoratedBox(
+                              decoration: decoration,
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: GestureDetector(
+                                    onTap: getImageFromGallery,
+                                    onDoubleTap: getImageFromPhoto,
+                                    child: ValueListenableBuilder(
+                                      valueListenable: _valueNewFile,
+                                      builder: (_, value, __) {
+                                        _valueNewFile.value = false;
+                                        final path = imgXFile?.path;
+                                        return (path != null)
+                                          ? Image.file(
+                                            File(path),
+                                             fit: BoxFit.cover,
+                                            )
+                                          : Image.network(
+                                              _textControllerUrl.text,
+                                              fit: BoxFit.cover,
+                                            );
+                                      }
+                                    )
+                                  )
+                                )
+                              ),
+                            ),
+                          ),
+                          TextField(
+                            controller: _textController,
+                            minLines: 1,
+                            maxLines: _count,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontFamily: 'Impact',
+                              fontSize: 40,
+                              color: Colors.white,
+                            ),
+                            mouseCursor: SystemMouseCursors.text,
+                            decoration: const InputDecoration(
+                              border: InputBorder.none
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    TextField(
-                      controller: _textController,
-                      minLines: 1,
-                      maxLines: 10,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontFamily: 'Impact',
-                        fontSize: 40,
-                        color: Colors.white,
-                      ),
-                      mouseCursor: SystemMouseCursors.text,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
       floatingActionButton: Row(
