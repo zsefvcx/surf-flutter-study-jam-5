@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -8,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:share/share.dart';
 
 class MemeGeneratorScreen extends StatefulWidget {
   const MemeGeneratorScreen({Key? key}) : super(key: key);
@@ -22,12 +22,15 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
   XFile? imgXFile;
   final _valueNewFile = ValueNotifier<bool>(false);
   final _textController = TextEditingController();
+  final _textControllerUrl = TextEditingController();
   final key = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     _textController.text = 'Здесь мог бы быть ваш мем';
+    _textControllerUrl.text = 'https://i.cbc.ca/1.6713656.1679693029!/fileImage/httpImage/image.jpg_gen/derivatives/16x9_780/this-is-fine.jpg';
+
   }
 
 
@@ -48,6 +51,35 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        centerTitle: false,
+         title: Row(
+           children: [
+             const Icon(Icons.label_important_outline_sharp,
+               color: Colors.white,
+             ),
+             const SizedBox(width: 10,),
+             Expanded(
+               child: TextField(
+                 controller: _textControllerUrl,
+                 minLines: 1,
+                 maxLines: 1,
+                 textAlign: TextAlign.center,
+                 style: const TextStyle(
+                   fontFamily: 'Impact',
+                   fontSize: 16,
+                   color: Colors.white,
+                 ),
+                 mouseCursor: SystemMouseCursors.text,
+                 decoration: const InputDecoration(
+                     border: InputBorder.none
+                 ),
+               ),
+             ),
+           ],
+         ),
+      ),
       body: RepaintBoundary(
         key: key,
         child: Center(
@@ -87,9 +119,9 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
                                        fit: BoxFit.cover,
                                       )
                                     : Image.network(
-                                      'https://i.cbc.ca/1.6713656.1679693029!/fileImage/httpImage/image.jpg_gen/derivatives/16x9_780/this-is-fine.jpg',
-                                      fit: BoxFit.cover,
-                                    );
+                                        _textControllerUrl.text,
+                                        fit: BoxFit.cover,
+                                      );
                                 }
                               )
                             )
@@ -119,27 +151,50 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.white,
-        child: const Icon(Icons.save_as_sharp,),
-        onPressed: () async {
-          var boundary = key.currentContext?.findRenderObject();
-          if (boundary == null || boundary is! RenderRepaintBoundary) return;
-          var image = await boundary.toImage();
-          var byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-          if (byteData == null) return;
-          Uint8List pngBytes = byteData.buffer.asUint8List();
-          //если ios await getApplicationDocumentsDirectory(); но мы в андройде пока
-          // final directory = await getApplicationDocumentsDirectory();
-          // if (directory == null) return;
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            backgroundColor: Colors.white,
+            child: const Icon(Icons.share,),
+            onPressed: () async {
+              var boundary = key.currentContext?.findRenderObject();
+              if (boundary == null || boundary is! RenderRepaintBoundary) return;
+              var image = await boundary.toImage();
+              var byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+              if (byteData == null) return;
+              Uint8List pngBytes = byteData.buffer.asUint8List();
 
-          final params = SaveFileDialogParams(
-              sourceFilePath: null,
-              data: pngBytes,
-              fileName: 'fileName.png'
-          );
-          final filePath = await FlutterFileDialog.saveFile(params: params);
-        },
+              final directory = await getApplicationCacheDirectory();
+              File file = File('${directory.path}/image.jpg');
+              await file.writeAsBytes(pngBytes);
+              await Share.shareFiles(
+                  [file.path],
+                  text: 'Great Meme!!!',
+
+              );
+              //Share.shareFiles(['${directory.path}/image1.jpg', '${directory.path}/image2.jpg']);
+            }),
+          const SizedBox(width: 10,),
+          FloatingActionButton(
+            backgroundColor: Colors.white,
+            child: const Icon(Icons.save_as_sharp,),
+            onPressed: () async {
+              var boundary = key.currentContext?.findRenderObject();
+              if (boundary == null || boundary is! RenderRepaintBoundary) return;
+              var image = await boundary.toImage();
+              var byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+              if (byteData == null) return;
+              Uint8List pngBytes = byteData.buffer.asUint8List();
+              final params = SaveFileDialogParams(
+                  sourceFilePath: null,
+                  data: pngBytes,
+                  fileName: 'fileName.png'
+              );
+              await FlutterFileDialog.saveFile(params: params);
+            },
+          ),
+        ],
       ),
     );
   }
