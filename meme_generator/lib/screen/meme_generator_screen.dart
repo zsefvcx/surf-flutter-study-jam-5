@@ -63,15 +63,21 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
                       decoration: decoration,
                       child: Padding(
                         padding: const EdgeInsets.all(4.0),
-                        child: (path != null)
-                            ? Image.file(
-                                File(path),
-                                fit: BoxFit.cover,
-                              )
-                            : Image.network(
-                                'https://i.cbc.ca/1.6713656.1679693029!/fileImage/httpImage/image.jpg_gen/derivatives/16x9_780/this-is-fine.jpg',
-                                fit: BoxFit.cover,
-                            ),
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: GestureDetector(
+                            onTap: getImageFromGallery,
+                            child: (path != null)
+                              ? Image.file(
+                                  File(path),
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.network(
+                                  'https://i.cbc.ca/1.6713656.1679693029!/fileImage/httpImage/image.jpg_gen/derivatives/16x9_780/this-is-fine.jpg',
+                                  fit: BoxFit.cover,
+                              ),
+                          )
+                        )
                       ),
                     ),
                   ),
@@ -100,5 +106,11 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
         ),
       ),
     );
+  }
+
+
+  Future<void> getImageFromGallery() async {
+    imgXFile = await imagePicker.pickImage(source: ImageSource.gallery);
+    if (imgXFile == null) return;
   }
 }
