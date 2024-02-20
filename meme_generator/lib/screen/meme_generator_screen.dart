@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -20,7 +22,6 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
   XFile? imgXFile;
   final _valueNewFile = ValueNotifier<bool>(false);
   final _textController = TextEditingController();
-
   final key = GlobalKey();
 
   @override
@@ -122,14 +123,22 @@ class _MemeGeneratorScreenState extends State<MemeGeneratorScreen> {
         backgroundColor: Colors.white,
         child: const Icon(Icons.save_as_sharp,),
         onPressed: () async {
-          RenderRepaintBoundary boundary = key.currentContext!.findRenderObject() as RenderRepaintBoundary;
-          Image image = await boundary.toImage() as Image;
-          ByteData byteData = await image.toByteData(format: ImageByteFormat.png);
+          var boundary = key.currentContext?.findRenderObject();
+          if (boundary == null || boundary is! RenderRepaintBoundary) return;
+          var image = await boundary.toImage();
+          var byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+          if (byteData == null) return;
           Uint8List pngBytes = byteData.buffer.asUint8List();
-          print(pngBytes);
-          final directory = await getExternalStorageDirectory();
-          File imgFile = File('${directory!.path}/layout2.pdf');
-          imgFile.writeAsBytes(pngBytes);
+          //если ios await getApplicationDocumentsDirectory(); но мы в андройде пока
+          // final directory = await getApplicationDocumentsDirectory();
+          // if (directory == null) return;
+
+          final params = SaveFileDialogParams(
+              sourceFilePath: null,
+              data: pngBytes,
+              fileName: 'fileName.png'
+          );
+          final filePath = await FlutterFileDialog.saveFile(params: params);
         },
       ),
     );
